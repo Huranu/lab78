@@ -1,0 +1,153 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model department {
+  id          Int           @id @default(autoincrement())
+  name        String        @unique @db.VarChar(255)
+  user        user[]
+  project_dep project_dep[]
+  task_dep    task_dep[]
+}
+
+model user {
+  id            Int         @id @default(autoincrement())
+  email         String      @unique @db.VarChar(255)
+  fname         String?     @db.VarChar(255)
+  lname         String?     @db.VarChar(255)
+  password      String
+  role          role        @default(EMPLOYEE)
+  department    department  @relation(fields: [department_id], references: [id], onDelete: Cascade)
+  department_id Int
+  task          task[]
+  user_task     user_task[]
+}
+
+enum role {
+  EMPLOYEE
+  ADMIN
+}
+
+model user_task {
+  id      Int  @id @default(autoincrement())
+  task    task @relation(fields: [task_id], references: [id], onDelete: Cascade)
+  task_id Int
+  user    user @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  user_id Int
+}
+
+model project {
+  id          Int           @id @default(autoincrement())
+  title       String        @db.VarChar(255)
+  description String
+  start_date  DateTime      @db.Date
+  due_date    DateTime      @db.Date
+  end_date    DateTime?     @db.Date
+  task        task[]
+  milestone   milestone[]
+  sprint      sprint[]
+  project_dep project_dep[]
+}
+
+model project_dep {
+  id            Int         @id @default(autoincrement())
+  project       project?    @relation(fields: [project_id], references: [id], onDelete: Cascade)
+  project_id    Int
+  department    department? @relation(fields: [department_id], references: [id], onDelete: Cascade)
+  department_id Int
+}
+
+model milestone {
+  id          Int       @id @default(autoincrement())
+  title       String    @db.VarChar(255)
+  description String
+  start_date  DateTime  @db.Date
+  due_date    DateTime  @db.Date
+  end_date    DateTime? @db.Date
+  project     project   @relation(fields: [project_id], references: [id], onDelete: Cascade)
+  project_id  Int
+  sprint      sprint[]
+  task        task[]
+}
+
+model sprint {
+  id           Int        @id @default(autoincrement())
+  title        String     @db.VarChar(255)
+  description  String
+  start_date   DateTime   @db.Date
+  due_date     DateTime   @db.Date
+  end_date     DateTime?  @db.Date
+  milestone    milestone? @relation(fields: [milestone_id], references: [id], onDelete: Cascade)
+  milestone_id Int?
+  project      project    @relation(fields: [project_id], references: [id], onDelete: Cascade)
+  project_id   Int
+  task         task[]
+}
+
+model task {
+  id           Int         @id @default(autoincrement())
+  title        String      @db.VarChar(255)
+  description  String
+  weight       Int         @default(1)
+  stage        stage       @default(PROPOSED)
+  start_date   DateTime    @db.Date
+  due_date     DateTime    @db.Date
+  end_date     DateTime?   @db.Date
+  project      project?    @relation(fields: [project_id], references: [id], onDelete: Cascade)
+  project_id   Int?
+  sprint       sprint?     @relation(fields: [sprint_id], references: [id], onDelete: Cascade)
+  sprint_id    Int?
+  milestone    milestone?  @relation(fields: [milestone_id], references: [id], onDelete: Cascade)
+  milestone_id Int?
+  owner        user        @relation(fields: [owner_id], references: [id])
+  owner_id     Int
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+  task_tag     task_tag[]
+  subtask      subtask[]
+  user_task    user_task[]
+  task_dep     task_dep[]
+}
+
+enum stage {
+  PROPOSED
+  INPROGRESS
+  REVIEW
+  COMPLETED
+}
+
+model subtask {
+  id      Int     @id @default(autoincrement())
+  title   String
+  status  Boolean @default(false)
+  task    task    @relation(fields: [task_id], references: [id], onDelete: Cascade)
+  task_id Int
+}
+
+model tag {
+  id       Int        @id @default(autoincrement())
+  title    String     @unique @db.VarChar(255)
+  color    String
+  task_tag task_tag[]
+}
+
+model task_tag {
+  id      Int  @id @default(autoincrement())
+  task    task @relation(fields: [task_id], references: [id], onDelete: Cascade)
+  task_id Int
+  tag     tag  @relation(fields: [tag_id], references: [id], onDelete: Cascade)
+  tag_id  Int
+}
+
+model task_dep {
+  id            Int        @id @default(autoincrement())
+  task          task       @relation(fields: [task_id], references: [id], onDelete: Cascade)
+  task_id       Int
+  department    department @relation(fields: [department_id], references: [id], onDelete: Cascade)
+  department_id Int
+}

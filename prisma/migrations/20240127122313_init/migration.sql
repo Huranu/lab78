@@ -1,0 +1,11 @@
+-- AlterTable
+ALTER TABLE "milestone" ALTER COLUMN "due_date" SET DATA TYPE DATE,
+ALTER COLUMN "end_date" SET DATA TYPE DATE;
+
+-- AlterTable
+ALTER TABLE "sprint" ALTER COLUMN "due_date" SET DATA TYPE DATE,
+ALTER COLUMN "end_date" SET DATA TYPE DATE;
+
+-- AlterTable
+ALTER TABLE "task" ALTER COLUMN "end_date" SET DATA TYPE DATE,
+ALTER COLUMN "due_date" SET DATA TYPE DATE;
