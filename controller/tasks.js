@@ -119,33 +119,54 @@ exports.createTask = asyncHandler(async (req, res, next) => {
   });
   });
 
-  exports.updateTask = asyncHandler(async (req, res, next) => {
-    const { title,description,due_date,stage,weight,end_date,project_id,milestone_id,sprint_id} = req.body;
-    const task = await prisma.task.update({
-      where:{
-        id:Number(req.params.taskId),
-      },
-      data: {
-        title,
-        description,
-        weight,
-        stage,
-        due_date,
-        end_date,
-        project_id,
-        milestone_id,
-        sprint_id,
-    },
-    })
-    if (!task) {
-      throw new MyError("Iim id-tai task baihgui baina", 400);
-    }
+  // exports.updateTask = asyncHandler(async (req, res, next) => {
+  //   const { title,description,due_date,stage,weight,end_date,project_id,milestone_id,sprint_id} = req.body;
+  //   const task = await prisma.task.update({
+  //     where:{
+  //       id:Number(req.params.taskId),
+  //     },
+  //     data: {
+  //       title,
+  //       description,
+  //       weight,
+  //       stage,
+  //       due_date,
+  //       end_date,
+  //       project_id,
+  //       milestone_id,
+  //       sprint_id,
+  //   },
+  //   })
+  //   if (!task) {
+  //     throw new MyError("Iim id-tai task baihgui baina", 400);
+  //   }
 
-  res.status(200).json({
-    success: true,
-    data: task,
-  });
-  });
+  // res.status(200).json({
+  //   success: true,
+  //   data: task,
+  // });
+  // });
+
+  exports.updateTask = asyncHandler(async (req, res, next) => {
+
+    const { stage} = req.body;
+    try{
+      const task = await prisma.task.update({
+        where:{
+          id:Number(req.params.taskId)
+        },
+        data: {
+          stage
+        },
+      });
+      res.status(200).json({
+        success: true,
+      });
+    }
+    catch(e){
+      console.log(e);
+    }
+})
 
   exports.getUserTasks = asyncHandler(async (req, res, next) => {
   const sort = req.query.sort;
@@ -217,6 +238,23 @@ exports.createTask = asyncHandler(async (req, res, next) => {
     res.status(200).json({
         success: true,
         data: formattedUsers,
+      });
+  });
+
+  exports.getTaskDeps = asyncHandler(async (req, res, next) => { 
+    const {taskId}=req.params;
+    const deps = await prisma.task_dep.findMany({
+      select:{
+        department:true
+      },
+      where:{
+        task_id:Number(taskId)
+      },
+    });
+    const formattedDeps = deps.map((item) => item.department);
+    res.status(200).json({
+        success: true,
+        data: formattedDeps,
       });
   });
 

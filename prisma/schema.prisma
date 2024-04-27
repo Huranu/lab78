@@ -4,15 +4,15 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
+  url      = "postgresql://postgres:0915@localhost:5432/task-management"
 }
 
 model department {
   id          Int           @id @default(autoincrement())
   name        String        @unique @db.VarChar(255)
-  user        user[]
   project_dep project_dep[]
   task_dep    task_dep[]
+  user        user[]
 }
 
 model user {
@@ -21,56 +21,51 @@ model user {
   fname         String?     @db.VarChar(255)
   lname         String?     @db.VarChar(255)
   password      String
-  role          role        @default(EMPLOYEE)
-  department    department  @relation(fields: [department_id], references: [id], onDelete: Cascade)
   department_id Int
+  role          role        @default(EMPLOYEE)
   task          task[]
+  department    department  @relation(fields: [department_id], references: [id], onDelete: Cascade)
   user_task     user_task[]
 }
 
-enum role {
-  EMPLOYEE
-  ADMIN
-}
-
 model user_task {
+  task_id Int
+  user_id Int
   id      Int  @id @default(autoincrement())
   task    task @relation(fields: [task_id], references: [id], onDelete: Cascade)
-  task_id Int
   user    user @relation(fields: [user_id], references: [id], onDelete: Cascade)
-  user_id Int
 }
 
 model project {
   id          Int           @id @default(autoincrement())
   title       String        @db.VarChar(255)
   description String
-  start_date  DateTime      @db.Date
-  due_date    DateTime      @db.Date
-  end_date    DateTime?     @db.Date
-  task        task[]
+  due_date    DateTime
+  end_date    DateTime?
+  start_date  DateTime
   milestone   milestone[]
-  sprint      sprint[]
   project_dep project_dep[]
+  sprint      sprint[]
+  task        task[]
 }
 
 model project_dep {
-  id            Int         @id @default(autoincrement())
-  project       project?    @relation(fields: [project_id], references: [id], onDelete: Cascade)
   project_id    Int
-  department    department? @relation(fields: [department_id], references: [id], onDelete: Cascade)
   department_id Int
+  id            Int        @id @default(autoincrement())
+  department    department @relation(fields: [department_id], references: [id], onDelete: Cascade)
+  project       project    @relation(fields: [project_id], references: [id], onDelete: Cascade)
 }
 
 model milestone {
   id          Int       @id @default(autoincrement())
   title       String    @db.VarChar(255)
-  description String
-  start_date  DateTime  @db.Date
-  due_date    DateTime  @db.Date
-  end_date    DateTime? @db.Date
-  project     project   @relation(fields: [project_id], references: [id], onDelete: Cascade)
+  due_date    DateTime
+  end_date    DateTime?
   project_id  Int
+  description String
+  start_date  DateTime
+  project     project   @relation(fields: [project_id], references: [id], onDelete: Cascade)
   sprint      sprint[]
   task        task[]
 }
@@ -78,14 +73,14 @@ model milestone {
 model sprint {
   id           Int        @id @default(autoincrement())
   title        String     @db.VarChar(255)
-  description  String
-  start_date   DateTime   @db.Date
-  due_date     DateTime   @db.Date
-  end_date     DateTime?  @db.Date
-  milestone    milestone? @relation(fields: [milestone_id], references: [id], onDelete: Cascade)
+  due_date     DateTime
+  end_date     DateTime?
   milestone_id Int?
-  project      project    @relation(fields: [project_id], references: [id], onDelete: Cascade)
   project_id   Int
+  description  String
+  start_date   DateTime
+  milestone    milestone? @relation(fields: [milestone_id], references: [id], onDelete: Cascade)
+  project      project    @relation(fields: [project_id], references: [id], onDelete: Cascade)
   task         task[]
 }
 
@@ -93,40 +88,33 @@ model task {
   id           Int         @id @default(autoincrement())
   title        String      @db.VarChar(255)
   description  String
-  weight       Int         @default(1)
-  stage        stage       @default(PROPOSED)
-  start_date   DateTime    @db.Date
-  due_date     DateTime    @db.Date
-  end_date     DateTime?   @db.Date
-  project      project?    @relation(fields: [project_id], references: [id], onDelete: Cascade)
+  end_date     DateTime?
   project_id   Int?
-  sprint       sprint?     @relation(fields: [sprint_id], references: [id], onDelete: Cascade)
-  sprint_id    Int?
-  milestone    milestone?  @relation(fields: [milestone_id], references: [id], onDelete: Cascade)
-  milestone_id Int?
-  owner        user        @relation(fields: [owner_id], references: [id])
   owner_id     Int
   createdAt    DateTime    @default(now())
   updatedAt    DateTime    @updatedAt
-  task_tag     task_tag[]
+  due_date     DateTime
+  milestone_id Int?
+  sprint_id    Int?
+  weight       Int         @default(1)
+  stage        stage       @default(PROPOSED)
+  start_date   DateTime
   subtask      subtask[]
-  user_task    user_task[]
+  milestone    milestone?  @relation(fields: [milestone_id], references: [id], onDelete: Cascade)
+  owner        user        @relation(fields: [owner_id], references: [id])
+  project      project?    @relation(fields: [project_id], references: [id], onDelete: Cascade)
+  sprint       sprint?     @relation(fields: [sprint_id], references: [id], onDelete: Cascade)
   task_dep     task_dep[]
-}
-
-enum stage {
-  PROPOSED
-  INPROGRESS
-  REVIEW
-  COMPLETED
+  task_tag     task_tag[]
+  user_task    user_task[]
 }
 
 model subtask {
   id      Int     @id @default(autoincrement())
   title   String
+  task_id Int
   status  Boolean @default(false)
   task    task    @relation(fields: [task_id], references: [id], onDelete: Cascade)
-  task_id Int
 }
 
 model tag {
@@ -137,17 +125,29 @@ model tag {
 }
 
 model task_tag {
-  id      Int  @id @default(autoincrement())
-  task    task @relation(fields: [task_id], references: [id], onDelete: Cascade)
   task_id Int
-  tag     tag  @relation(fields: [tag_id], references: [id], onDelete: Cascade)
   tag_id  Int
+  id      Int  @id @default(autoincrement())
+  tag     tag  @relation(fields: [tag_id], references: [id], onDelete: Cascade)
+  task    task @relation(fields: [task_id], references: [id], onDelete: Cascade)
 }
 
 model task_dep {
-  id            Int        @id @default(autoincrement())
-  task          task       @relation(fields: [task_id], references: [id], onDelete: Cascade)
   task_id       Int
-  department    department @relation(fields: [department_id], references: [id], onDelete: Cascade)
   department_id Int
+  id            Int        @id @default(autoincrement())
+  department    department @relation(fields: [department_id], references: [id], onDelete: Cascade)
+  task          task       @relation(fields: [task_id], references: [id], onDelete: Cascade)
+}
+
+enum role {
+  EMPLOYEE
+  ADMIN
+}
+
+enum stage {
+  PROPOSED
+  INPROGRESS
+  REVIEW
+  COMPLETED
 }

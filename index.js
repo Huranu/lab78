@@ -36,7 +36,7 @@ app.use("/login", LoginRoute);
 app.use("/register", RegisterRoute);
 
 
-app.listen(process.env.PORT,()=>{
+app.listen(process.env.PORT,"0.0.0.0",()=>{
   console.log(`server started on ${process.env.PORT} PORT🔥`);
 });
 

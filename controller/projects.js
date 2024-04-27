@@ -16,7 +16,7 @@ exports.createProject = asyncHandler(async (req, res, next) => {
     },
   })
 
-  if(deps.length!=0){
+  if(deps!=null&&deps.length!=0){
     deps.map(async (e)=> {
       await prisma.project_dep.create({
         data:{

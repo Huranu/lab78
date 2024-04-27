@@ -1,6 +1,6 @@
 const express = require("express");
 
-const {getAllTasks , getTask , deleteTask , updateTask, createTask,getTaskUsers} = require("../controller/tasks");
+const {getAllTasks , getTask , deleteTask , updateTask, createTask,getTaskUsers,getTaskDeps} = require("../controller/tasks");
 const {postSubtask , getTaskSubtasks, updateSubtask} = require("../controller/subtask");
 const {getTaskTags} = require("../controller/tags");
 const {protect} = require("../middleware/protect");
@@ -14,6 +14,9 @@ const {protect} = require("../middleware/protect");
 
   // Users
   router.route("/:taskId/users").get(getTaskUsers);
+
+  // Users
+  router.route("/:taskId/deps").get(getTaskDeps);
 
   // Subtask
   router.route("/:taskId/subtasks").get(getTaskSubtasks).post(protect,postSubtask);

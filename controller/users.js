@@ -73,6 +73,7 @@ exports.createUser = asyncHandler(async (req, res, next) => {
 
   exports.getUsers = asyncHandler(async (req, res, next) => {
     const users = await prisma.user.findMany();
+    console.log(users);
     res.status(200).json({
         success: true,
         data: users,
