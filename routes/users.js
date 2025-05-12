@@ -1,17 +1,11 @@
 const express = require("express");
-const {protect} = require("../middleware/protect");
 
-const {createUser,getUsers,getUser} = require("../controller/users");
-const {getUserTasks} = require("../controller/tasks");
+const {
+  getAllUsers,
+} = require("../controller/users");
 
-  
-  const router = express.Router();
-  
-  router.route("/").post(createUser).get(getUsers);
+const router = express.Router();
 
-  router.route("/tasks").get(protect,getUserTasks);
+router.route("/").get(getAllUsers);
 
-  router.route("/profile").get(protect,getUser);
-  
-  
-  module.exports = router;
+module.exports = router;

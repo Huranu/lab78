@@ -3,151 +3,41 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = "postgresql://postgres:0915@localhost:5432/task-management"
+  provider = "mongodb"
+  url      = "mongodb+srv://huranu:Ns6aXzU1ceqByUEC@cluster0.t2lqvfp.mongodb.net/lab5?retryWrites=true&w=majority"
 }
 
-model department {
-  id          Int           @id @default(autoincrement())
-  name        String        @unique @db.VarChar(255)
-  project_dep project_dep[]
-  task_dep    task_dep[]
-  user        user[]
-}
+model User { 
+  id String  @id @default(cuid()) @map("_id")
+  email String @unique 
+  password String 
+  fname String? 
+  lname String? 
+  username String? @unique 
+  phone_number String? 
+  imageUrl String? 
+  places       Place[]
+  refreshTokens RefreshToken[] 
+  created_at DateTime @default(now())
+  }
 
-model user {
-  id            Int         @id @default(autoincrement())
-  email         String      @unique @db.VarChar(255)
-  fname         String?     @db.VarChar(255)
-  lname         String?     @db.VarChar(255)
-  password      String
-  department_id Int
-  role          role        @default(EMPLOYEE)
-  task          task[]
-  department    department  @relation(fields: [department_id], references: [id], onDelete: Cascade)
-  user_task     user_task[]
-}
+model RefreshToken { 
+  id String  @id @default(cuid()) @map("_id")
+  token String @unique 
+  userId String 
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade) 
+  expiresAt DateTime 
+  createdAt DateTime @default(now()) 
+  }
 
-model user_task {
-  task_id Int
-  user_id Int
-  id      Int  @id @default(autoincrement())
-  task    task @relation(fields: [task_id], references: [id], onDelete: Cascade)
-  user    user @relation(fields: [user_id], references: [id], onDelete: Cascade)
-}
-
-model project {
-  id          Int           @id @default(autoincrement())
-  title       String        @db.VarChar(255)
+model Place {
+  id          String   @id @default(cuid()) @map("_id")
+  title       String
   description String
-  due_date    DateTime
-  end_date    DateTime?
-  start_date  DateTime
-  milestone   milestone[]
-  project_dep project_dep[]
-  sprint      sprint[]
-  task        task[]
-}
-
-model project_dep {
-  project_id    Int
-  department_id Int
-  id            Int        @id @default(autoincrement())
-  department    department @relation(fields: [department_id], references: [id], onDelete: Cascade)
-  project       project    @relation(fields: [project_id], references: [id], onDelete: Cascade)
-}
-
-model milestone {
-  id          Int       @id @default(autoincrement())
-  title       String    @db.VarChar(255)
-  due_date    DateTime
-  end_date    DateTime?
-  project_id  Int
-  description String
-  start_date  DateTime
-  project     project   @relation(fields: [project_id], references: [id], onDelete: Cascade)
-  sprint      sprint[]
-  task        task[]
-}
-
-model sprint {
-  id           Int        @id @default(autoincrement())
-  title        String     @db.VarChar(255)
-  due_date     DateTime
-  end_date     DateTime?
-  milestone_id Int?
-  project_id   Int
-  description  String
-  start_date   DateTime
-  milestone    milestone? @relation(fields: [milestone_id], references: [id], onDelete: Cascade)
-  project      project    @relation(fields: [project_id], references: [id], onDelete: Cascade)
-  task         task[]
-}
-
-model task {
-  id           Int         @id @default(autoincrement())
-  title        String      @db.VarChar(255)
-  description  String
-  end_date     DateTime?
-  project_id   Int?
-  owner_id     Int
-  createdAt    DateTime    @default(now())
-  updatedAt    DateTime    @updatedAt
-  due_date     DateTime
-  milestone_id Int?
-  sprint_id    Int?
-  weight       Int         @default(1)
-  stage        stage       @default(PROPOSED)
-  start_date   DateTime
-  subtask      subtask[]
-  milestone    milestone?  @relation(fields: [milestone_id], references: [id], onDelete: Cascade)
-  owner        user        @relation(fields: [owner_id], references: [id])
-  project      project?    @relation(fields: [project_id], references: [id], onDelete: Cascade)
-  sprint       sprint?     @relation(fields: [sprint_id], references: [id], onDelete: Cascade)
-  task_dep     task_dep[]
-  task_tag     task_tag[]
-  user_task    user_task[]
-}
-
-model subtask {
-  id      Int     @id @default(autoincrement())
-  title   String
-  task_id Int
-  status  Boolean @default(false)
-  task    task    @relation(fields: [task_id], references: [id], onDelete: Cascade)
-}
-
-model tag {
-  id       Int        @id @default(autoincrement())
-  title    String     @unique @db.VarChar(255)
-  color    String
-  task_tag task_tag[]
-}
-
-model task_tag {
-  task_id Int
-  tag_id  Int
-  id      Int  @id @default(autoincrement())
-  tag     tag  @relation(fields: [tag_id], references: [id], onDelete: Cascade)
-  task    task @relation(fields: [task_id], references: [id], onDelete: Cascade)
-}
-
-model task_dep {
-  task_id       Int
-  department_id Int
-  id            Int        @id @default(autoincrement())
-  department    department @relation(fields: [department_id], references: [id], onDelete: Cascade)
-  task          task       @relation(fields: [task_id], references: [id], onDelete: Cascade)
-}
-
-enum role {
-  EMPLOYEE
-  ADMIN
-}
-
-enum stage {
-  PROPOSED
-  INPROGRESS
-  REVIEW
-  COMPLETED
+  location    String
+  lat_long    String
+  imageUrl    String?
+  user        User     @relation(fields: [userId], references: [id])
+  userId      String
+  created_at  DateTime @default(now())
 }
